@@ -48,15 +48,16 @@ function ParticleField() {
         p.x += p.vx; p.y += p.vy;
         if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
         if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = "rgba(148,252,198,0.15)"; ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = "rgba(148,252,198,0.5)"; ctx.fill();
         for (let j = i + 1; j < particles.length; j++) {
           const dx = p.x - particles[j].x, dy = p.y - particles[j].y, d = Math.sqrt(dx * dx + dy * dy);
-          if (d < 120) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = "rgba(148,252,198," + (0.06 * (1 - d / 120)) + ")"; ctx.stroke(); }
+          if (d < 120) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = "rgba(148,252,198," + (0.12 * (1 - d / 120)) + ")"; ctx.stroke(); }
         }
       });
       animId = requestAnimationFrame(draw);
     };
     draw();
+    return () => cancelAnimationFrame(animId);
     return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); };
   }, []);
   return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }} />;
@@ -64,8 +65,10 @@ function ParticleField() {
 
 function Confetti({ active }) {
   const canvasRef = useRef(null);
+  const hasRun = useRef(false);
   useEffect(() => {
-    if (!active) return;
+    if (!active || hasRun.current) return;
+    hasRun.current = true;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -76,29 +79,29 @@ function Confetti({ active }) {
     for (let i = 0; i < 150; i++) {
       pieces.push({
         x: Math.random() * canvas.width,
-        y: Math.random() * -canvas.height,
-        w: Math.random() * 8 + 4,
-        h: Math.random() * 4 + 2,
+        y: -(Math.random() * Math.random() * canvas.height),
+        w: Math.random() * Math.random() * 12 + 3,
+        h: Math.random() * Math.random() * 6 + 1,
         color: colors[Math.floor(Math.random() * colors.length)],
-        vx: (Math.random() - 0.5) * 4,
-        vy: Math.random() * 3 + 2,
+        vx: (Math.random() - 0.5) * (Math.random() * 6 + 1),
+        vy: Math.random() * Math.random() * 3 + 0.8,
         rot: Math.random() * 360,
-        rotV: (Math.random() - 0.5) * 10,
+        rotV: (Math.random() - 0.5) * (Math.random() * 15 + 2),
         opacity: 1,
       });
     }
     let frame = 0;
+    let id;
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      let alive = false;
       pieces.forEach(p => {
         p.x += p.vx;
         p.vy += 0.05;
+        p.vy = Math.min(p.vy, 5);
         p.y += p.vy;
         p.rot += p.rotV;
-        if (frame > 60) p.opacity = Math.max(0, p.opacity - 0.008);
+        if (frame > 80) p.opacity = Math.max(0, p.opacity - 0.006);
         if (p.opacity <= 0 || p.y > canvas.height + 20) return;
-        alive = true;
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(p.rot * Math.PI / 180);
@@ -108,13 +111,16 @@ function Confetti({ active }) {
         ctx.restore();
       });
       frame++;
-      if (alive) requestAnimationFrame(draw);
+      if (frame < 500) { id = requestAnimationFrame(draw); } else { ctx.clearRect(0, 0, canvas.width, canvas.height); }
     };
-    draw();
+    id = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(id);
   }, [active]);
-  if (!active) return null;
+  useEffect(() => { if (!active) hasRun.current = false; }, [active]);
+  
   return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, zIndex: 999, pointerEvents: "none" }} />;
-}const INVALID_BASE58_STRICT = /[0OIl]/;
+}
+const INVALID_BASE58_STRICT = /[0OIl]/;
 const INVALID_BASE58_LOOSE = /[0]/;
 function getInvalidChars(str, caseSensitive) {
   const re = caseSensitive ? INVALID_BASE58_STRICT : INVALID_BASE58_LOOSE;
@@ -304,7 +310,7 @@ export default function App() {
         *{box-sizing:border-box;margin:0;padding:0}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
         @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes fadeIn{from{opacity:0}to{opacity:1}} .github-link{color:rgba(148,252,198,.4);text-decoration:underline;transition:all .2s ease;display:inline-block} .github-link:hover{color:#94FCC6;transform:scale(1.08);text-shadow:0 0 10px rgba(148,252,198,.3)}
+        @keyframes cFall{0%{opacity:1;transform:translateY(0) translateX(0) rotate(0deg)}30%{opacity:1}100%{opacity:0;transform:translateY(var(--ty)) translateX(var(--tx)) rotate(var(--rot))}}50%{opacity:1}100%{opacity:0;transform:translateY(var(--ty)) translateX(var(--tx)) rotate(var(--rot))}}60%{opacity:1}100%{opacity:0;transform:translate(var(--tx),var(--ty)) rotate(var(--rot))}} @keyframes fadeIn{from{opacity:0}to{opacity:1}} 70%{opacity:1}100%{opacity:0;transform:translateY(100vh) rotate(720deg)}} .github-link{color:rgba(148,252,198,.4);text-decoration:underline;transition:all .2s ease;display:inline-block} .github-link,.github-link:visited{color:rgba(148,252,198,.4);text-decoration:underline} .github-link:hover{color:#94FCC6;transform:scale(1.08);text-shadow:0 0 10px rgba(148,252,198,.3)}
         @keyframes spin{to{transform:rotate(360deg)}}
         input:focus{outline:none}
         ::selection{background:rgba(148,252,198,.25)}
