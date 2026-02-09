@@ -304,7 +304,7 @@ export default function App() {
         *{box-sizing:border-box;margin:0;padding:0}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
         @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}} .github-link{color:rgba(148,252,198,.4);text-decoration:underline;transition:all .2s ease;display:inline-block} .github-link:hover{color:#94FCC6;transform:scale(1.08);text-shadow:0 0 10px rgba(148,252,198,.3)}
         @keyframes spin{to{transform:rotate(360deg)}}
         input:focus{outline:none}
         ::selection{background:rgba(148,252,198,.25)}
@@ -626,7 +626,7 @@ export default function App() {
         }}>
           Ed25519 keypair generation runs entirely in your browser via WebAssembly.
           <br />No data is transmitted. No keys are stored. No cookies. No accounts.
-          <br /><span style={{ color: "rgba(148,252,198,.2)" }}>solvanity</span> — built with ☕ and open sourced with 💚
+          <br /><span style={{ color: "rgba(148,252,198,.2)" }}>solvanity</span> — built with ☕ and <a href="https://github.com/oops-cloud/solvanity" target="_blank" rel="noopener" className="github-link">open sourced on GitHub</a> 💚
         </footer>
       </div>
     </div>
